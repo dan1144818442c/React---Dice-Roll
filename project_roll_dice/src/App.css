@@ -1,0 +1,6 @@
+body {
+  background-color: #9b89c8; /* רקע כהה */
+  color: rgb(227, 216, 216);              /* טקסט לבן כדי שיהיה קריא */
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
