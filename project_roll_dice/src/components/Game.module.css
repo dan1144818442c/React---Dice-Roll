@@ -1,0 +1,42 @@
+.container {
+  text-align: center;
+  margin-top: 40px;
+  font-family: Arial, sans-serif;
+}
+
+.scores {
+  margin-top: 20px;
+  font-size: 18px;
+}
+
+.buttons {
+  margin-top: 30px;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.diceContainer {
+  margin-top: 20px;
+}
+
+.diceImg {
+  width: 150px;
+  margin-right: 20px;
+}
+
+.players {
+  display: flex;
+  justify-content: center;
+  gap: 40px; /* רווח בין השחקנים */
+  margin-top: 20px;
+}

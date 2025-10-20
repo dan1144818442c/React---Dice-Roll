@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 
-export default function StartScreen({ onStart }) {
+export default function StartScreen({ onStart ,player1Name ,player2Name ,setPlayer1Name ,setPlayer2Name}) {
   const [targetScore, setTargetScore] = useState('');
 
   const handleStart = () => {
-    if (targetScore && !isNaN(targetScore)) {
+    if (targetScore && !isNaN(targetScore) && targetScore > 0 ) {
+      
       onStart(Number(targetScore));
-    } else {
+
+    }
+    else{ 
       alert('Please enter a valid number.');
     }
   };
@@ -14,6 +17,30 @@ export default function StartScreen({ onStart }) {
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
       <h1>GAME - DICE-ROLL</h1>
+      
+      <div style={{ marginBottom: "20px" }}>
+        <label>
+          Player 1 Name:
+          <input
+            type="text"
+            value={player1Name}
+            onChange={(e) => setPlayer1Name(e.target.value)}
+            style={{ marginLeft: "10px", padding: "5px" }}
+          />
+        </label>
+      </div>
+
+      <div style={{ marginBottom: "20px" }}>
+        <label>
+          Player 2 Name:
+          <input
+            type="text"
+            value={player2Name}
+            onChange={(e) => setPlayer2Name(e.target.value)}
+            style={{ marginLeft: "10px", padding: "5px" }}
+          />
+        </label>
+      </div>
       <div>
         <label>
           Target score:
