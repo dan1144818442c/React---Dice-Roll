@@ -1,4 +1,4 @@
-import React, { useState  } from 'react';
+import React, { useState , useId }  from 'react';
 import StartScreen from './components/startScreen';
 import  Game from './components/Game';
 import './App.css'
@@ -13,6 +13,8 @@ export default function App() {
   const [winsPlayer2 , setWinsPlayer2] = useState(0)
   const [player1Name, setPlayer1Name] = useState("Player 1");
   const [player2Name, setPlayer2Name] = useState("Player 2");
+  const id1 = useId();
+  const id2 = useId();
 
   const handleStart = (score) => {
     setTargetScore(score);
@@ -25,8 +27,8 @@ export default function App() {
   const resetAllGame = () =>{
     setWinsPlayer1(0)
     setWinsPlayer2(0)
-    localStorage.removeItem(`Number of wins player ${player1Name}`);
-    localStorage.removeItem(`Number of wins player ${player2Name}`);
+    localStorage.removeItem(`Number of wins player ${id1}`);
+    localStorage.removeItem(`Number of wins player ${id2}`);
 
     handlRestart()
   }
@@ -37,6 +39,8 @@ export default function App() {
    resetAllGame = {resetAllGame}
    player1Name={player1Name}
    player2Name={player2Name}
+   player1Id = {id1}
+   player2Id = {id2} 
    setPlayer1Name={setPlayer1Name}
    setPlayer2Name={setPlayer2Name}
    winsPlayer1={winsPlayer1}

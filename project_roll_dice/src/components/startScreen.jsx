@@ -4,10 +4,13 @@ export default function StartScreen({ onStart ,player1Name ,player2Name ,setPlay
   const [targetScore, setTargetScore] = useState('');
 
   const handleStart = () => {
-    if (targetScore && !isNaN(targetScore) && targetScore > 0 ) {
-      
-      onStart(Number(targetScore));
-
+    if (targetScore && !isNaN(targetScore) && targetScore > 0  ) {
+      if (targetScore <= 100 ){
+        onStart(Number(targetScore));
+        }
+      else{
+        alert('Please enter a number between 0 to 100 ')
+      }
     }
     else{ 
       alert('Please enter a valid number.');
@@ -45,6 +48,7 @@ export default function StartScreen({ onStart ,player1Name ,player2Name ,setPlay
         <label>
           Target score:
           <input
+            type='number'
             value={targetScore}
             onChange={(e) => setTargetScore(e.target.value)}
             style={{ marginLeft: "10px", padding: "5px" }}
