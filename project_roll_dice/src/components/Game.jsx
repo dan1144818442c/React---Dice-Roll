@@ -37,10 +37,11 @@ export default function Game(
     setWinsPlayer2
   }) {
 
-  const [player1Score, setPlayer1Score] = useState(0);
-  const [player2Score, setPlayer2Score] = useState(0);
-  const [currentPlayer1Score, setCurrentPlayer1Score] = useState(0);
-  const [currentPlayer2Score, setCurrentPlayer2Score] = useState(0);
+  const [players, setPlayers] = useState({
+    1: { score: 0, currentScore: 0, wins: winsPlayer1, id: player1Id, name: player1Name },
+    2: { score: 0, currentScore: 0, wins: winsPlayer2, id: player2Id, name: player2Name }
+  });
+
   const [dice1, setDice1] = useState(1);
   const [dice2, setDice2] = useState(1);
   const [turn, setTurn] = useState(1);
@@ -48,23 +49,83 @@ export default function Game(
 
   useEffect(() => {
         const savedWins1 = localStorage.getItem(`Number of wins playerID : ${player1Id}`);
-        const savedWins2 = localStorage.getItem(`Number of wins player ${player2Id}`);
+        const savedWins2 = localStorage.getItem(`Number of wins player@2 ${player2Id}`);
         if (savedWins1) setWinsPlayer1(parseInt(savedWins1));
         if (savedWins2) setWinsPlayer2(parseInt(savedWins2));
               }, 
               []);
   
+
+  const player1Score = players[1].score;
+  const player2Score = players[2].score;
+
+  const getOtherPlayerId = (currentPlayerId) => {
+      return currentPlayerId === 1 ? 2 : 1;
+  };
+
+  useEffect(() => {
+      let winnerId = null;
+      let winningPlayer = null;
+      let losingPlayer = null;
+
+      if (player1Score >= targetScore) {
+          if (player1Score === targetScore) {
+              winnerId = 1;
+              winningPlayer = players[1];
+              losingPlayer = players[2];
+          } else { 
+              winnerId = 2;
+              winningPlayer = players[2];
+              losingPlayer = players[1];
+          }
+      }
+      
+  
+      if (player2Score >= targetScore && winnerId === null) {
+          if (player2Score === targetScore) {
+              winnerId = 2;
+              winningPlayer = players[2];
+              losingPlayer = players[1];
+          } else { 
+              winnerId = 1;
+              winningPlayer = players[1];
+              losingPlayer = players[2];
+          }
+      }
+
+
+    if (winnerId !== null) {
+        alert(`${winningPlayer.name} wins!`); 
+        
+        const newWins = winningPlayer.wins + 1;
+        localStorage.setItem(`Number of wins player ${winningPlayer.id}`, newWins);
+        
+        if (winnerId === 1) {
+            setWinsPlayer1(newWins);
+        } else {
+            setWinsPlayer2(newWins);
+        }
+        
+        onRestart();
+      }
+  }, [
+      player1Score, 
+      player2Score, 
+      targetScore, 
+      onRestart,
+      players,
+      setWinsPlayer1, 
+      setWinsPlayer2
+  ]);
+
+
   useEffect(() => {
   if (turn === 2) {
-    // השהייה קטנה כדי לאפשר אנימציות/עדכון UI לפני שה־AI מתחיל
     const timer = setTimeout(() => {
       aiTurn();
     }, 500);
 
-    return () => clearTimeout(timer); // ניקוי כשיתבטל
-  }
-  else {
-    
+    return () => clearTimeout(timer); 
   }
     }, [turn]);
 
@@ -72,14 +133,15 @@ useEffect(() => {
   if (numberOfThrows > 6) {
    
     setNumberOfThrows(0); 
-    setCurrentPlayer1Score(0)
-    setCurrentPlayer2Score(0)
-    
-
-   
+    setPlayers(prev => ({
+      ...prev,
+      1: { ...prev[1], currentScore: 0 },
+      2: { ...prev[2], currentScore: 0 }
+    }));
     setTurn(prev => (prev === 1 ? 2  : 1));
     }
     }, [numberOfThrows]);
+  
 
 
   const rollDice = () => {
@@ -94,98 +156,118 @@ useEffect(() => {
 
   const rollTurn = () => {
     const total = rollDice();
-    if (turn === 1) setCurrentPlayer1Score(prev => prev + total);
-    else setCurrentPlayer2Score(prev => prev + total);
+    // if (turn === 1) setCurrentPlayer1Score(prev => prev + total);
+    // else setCurrentPlayer2Score(prev => prev + total);
+    setPlayers(prev => (
+      { ...prev ,
+       [turn]:{ ...prev[turn] ,  currentScore: prev[turn].currentScore + total
+       }
+       }));
     };
 
   const zeroCurrentScoreOfCurrentUser = () => {
-    if (turn === 1) setCurrentPlayer1Score(0);
-    else setCurrentPlayer2Score(0);
-      };
-
-  function checkWin(playerNamwe , playerId, otherPlayerName, otherPlayerId , newScore, targetScore, setWinsCurrent , winsCurrent, setWinsOther , WinsOther) {
-    if (newScore === targetScore) {
-      alert(`${playerNamwe} wins!`);
-      setWinsCurrent(prev =>{ 
-            const numWins_ = prev +1;
-            localStorage.setItem(`Number of wins player ${playerId}` , numWins_);
-            console.log(numWins_)
-            return numWins_;});
-      onRestart();
-     } 
-    else if (newScore > targetScore) {
-      alert(`${otherPlayerName} wins!`);
-      setWinsOther(prev => {
-      const numWins = prev + 1;
-      localStorage.setItem(`Number of wins player ${otherPlayerId}`, numWins);
-      console.log(numWins)
-      return numWins;
-    });
-      onRestart();
-    }
-    console.log(newScore)
+    setPlayers(prev => ({
+      ...prev , 
+      [turn] : {...prev[turn] , currentScore : 0}
+    }))
   }
 
-  const aiTurn = () => {
-    let aiCurrent = 0;
+  function get_other_turn(){
+    if (turn == 1) {
+      return 2;
+    }
+    else{
+      return 1
+    }
+  }
 
-    const aiPlay = () => {
+  function checkWin (currentPlayer, otherPlayer) {
+    if (currentPlayer.score === targetScore) {
+      alert(`${currentPlayer.name} wins!`);
+    setPlayers(prev => {
+      const newWins = prev[turn].wins + 1;  // ← כאן יוצרים משתנה חדש מתוך המידע הקיים
+
+      // מעדכנים את localStorage לפני החזרה
+      localStorage.setItem(`Number of wins player ${currentPlayer.id}`, newWins);
+
+      return {
+        ...prev,
+        [turn]: { ...prev[turn], wins: newWins }
+      };
+
+    })
+  onRestart();
+}
+    else if (currentPlayer.score > targetScore) {
+      alert(`${otherPlayer.name} wins!`);
+      setPlayers(prev => {
+      const newWins = prev[get_other_turn()].wins + 1;  // ← כאן יוצרים משתנה חדש מתוך המידע הקיים
+
+      // מעדכנים את localStorage לפני החזרה
+      localStorage.setItem(`Number of wins player ${otherPlayer.id}`, newWins);
+
+      return {
+        ...prev,
+        [get_other_turn()]: { ...prev[get_other_turn()], wins: newWins }
+      };
+    });
+    onRestart();
+    };
+      
+    }
+
+  
+
+const aiTurn = () => {
+  let aiCurrent = 0;
+
+  const aiPlay = () => {
     const rollTotal = rollDice();
     aiCurrent += rollTotal;
-    setCurrentPlayer2Score(aiCurrent)
+
+    setPlayers(prev => ({
+      ...prev,
+      2: { ...prev[2], currentScore: aiCurrent }
+    }));
+
     setTimeout(() => {
-      const newScore = player2Score + aiCurrent;
+      setPlayers(prev => {
+        const newScore = prev[2].score + aiCurrent;
+        const updated = {
+          ...prev,
+          2: { ...prev[2], score: newScore, currentScore: 0 }
+        };
 
-        if (newScore >= targetScore || Math.random() < 0.3) {
-          setPlayer2Score(newScore);
-          setCurrentPlayer2Score(0);
-          checkWin(
-            player2Name,
-            player2Id,
-            player1Name,
-            player1Id,
-            newScore,
-            targetScore,
-            setWinsPlayer2,
-            winsPlayer2,
-            setWinsPlayer1,
-            winsPlayer1
-          );
-          setNumberOfThrows(0);
-          setTurn(1); 
-        } else {
-         
-          aiPlay();
-        }
-      }, 800); 
-    };
+        return updated;
+      });
 
-    aiPlay();
+      if (Math.random() < 0.3 || aiCurrent + players[2].score >= targetScore) {
+        replaceTurnAndAddCurrentScore()
+       
+      } else {
+        aiPlay();
+      }
+    }, 800);
   };
 
-  const replaceTurnAndAddCurrentScore = () => {
-    if (turn === 1) {
+  aiPlay();
+};
 
-      const newScore = player1Score + currentPlayer1Score;
-      setPlayer1Score(newScore);
-      setCurrentPlayer1Score(0);
-      checkWin(
-            player1Name,
-            player1Id,
-            player2Name,
-            player2Id,
-            newScore,
-            targetScore,
-            setWinsPlayer1,
-            winsPlayer1 ,
-            setWinsPlayer2 , 
-            winsPlayer2
-            ); 
-            
+
+  const replaceTurnAndAddCurrentScore = () => {
+    setPlayers(prev => {
+      const current = prev[turn];
+      const newScore = current.score + current.currentScore;
+      const update = {...prev ,
+        [turn] : {...prev[turn] , score : newScore , current : 0 }
+      };
+      return update;
+
+    });
       setNumberOfThrows(0);
-      setTurn(2);
+      setTurn( get_other_turn());
       } 
-      else {
+    
       
         // const newScore = player2Score + currentPlayer2Score;
         // setPlayer2Score(newScore); 
@@ -207,11 +289,7 @@ useEffect(() => {
         
 
     
-  };
-
-      
-    };
-
+  
     return (
       <div className={styles.container}>
         <h2>Target Score: {targetScore}</h2>
@@ -219,11 +297,11 @@ useEffect(() => {
 
         <div className={styles.players}>
         <Player
-            name={player1Name}
-            score={player1Score}
-            currentScore={currentPlayer1Score}
+            name={players[1].name}
+            score={players[1].score}
+            currentScore={players[1].currentScore}
             isTurn={turn === 1}
-            wins={winsPlayer1}
+            wins={players[1].wins}
             onRoll={rollTurn}
           />
           {/* <Player
@@ -236,9 +314,9 @@ useEffect(() => {
 
           /> */}
           <AIPlayer
-          name={player2Name}
-          score={player2Score}
-          currentScore={currentPlayer2Score}
+          name={players[2].name}
+          score={players[2].score}
+          currentScore={players[2].currentScore}
           isTurn={turn === 2}
           wins={winsPlayer2}
           

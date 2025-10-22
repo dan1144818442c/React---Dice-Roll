@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>TStarb Start Screen</title>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- React + ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+
+      function StartScreen({ onStart }) {
+        const [targetScore, setTargetScore] = React.useState(""); 
+
+        const handleStart = () => {
+          if (targetScore && !isNaN(targetScore)) {
+            onStart(Number(targetScore)); 
+          } else {
+            alert('Please enter a valid number.');
+          }
+        };
+
+        return (
+          <div style={{ textAlign: "center", marginTop: "50px" }}>
+            <h1>GAME - DICE-ROLL</h1>
+            <div>
+              <label>
+                Target score:
+                <input
+                  value={targetScore}
+                  onChange={(e) => setTargetScore(e.target.value)}
+                  style={{ marginLeft: "10px", padding: "5px" }}
+                />
+              </label>
+            </div>
+            <button onClick={handleStart} style={{ marginTop: "20px", padding: "10px 20px" }}>
+             start game
+            </button>
+          </div>
+        );
+      }
+
+      // מסך המשחק עצמו
+      function Game({ targetScore }) {
+        
+        function Player({ name, score }) {
+            return (
+                <p>{name}: {score}</p>
+            );
+        }   
+
+
+        const [player1Score, setPlayer1Score] = React.useState(0);
+        const [player2Score, setPlayer2Score] = React.useState(0);
+        const [currentPlayer1Score , setCurrentPlayer1Score] = React.useState(0);
+        const [currentPlayer2Score , setCurrentPlayer2Score] = React.useState(0);
+        const [dice1, setDice1] = React.useState(1);
+        const [dice2, setDice2] = React.useState(1);
+
+        const [turn, setTurn] = React.useState(1);            
+        
+        function raplaceTurnAnd_add_currenr_score(){
+            if (turn == 1){
+                setTurn(2)
+                setPlayer1Score(prev => prev + currentPlayer1Score)
+                setCurrentPlayer1Score(0)
+            }
+            else{
+            setTurn(1)
+            setPlayer2Score(prev => prev + currentPlayer2Score)
+            setCurrentPlayer2Score(0)
+
+
+        }
+        if (player1Score == targetScore) {
+            alert("plater 1 win!!!!")
+        }
+      if (player2Score == targetScore) {
+            alert("plater 2 win!!!!")
+        }
+        };
+
+        function ZeroCurrentScoreOfCurrentUser(){
+            if (turn == 1){
+                setCurrentPlayer1Score(0)
+            }
+            else{
+                setCurrentPlayer2Score(0)
+            }
+        }
+      const rollDice = () => {
+  
+        setDice1( Math.floor(Math.random() * 6) + 1)
+        setDice2( Math.floor(Math.random() * 6) + 1)
+
+        if (dice1 === 6 && dice2 === 6) {
+            ZeroCurrentScoreOfCurrentUser()
+        }
+        return (dice1 +  dice2); 
+        }
+
+
+        const rollTurn = () => {    
+        const total = rollDice();
+
+        if (turn === 1) {
+            setCurrentPlayer1Score(prev => prev + total);
+       
+        } else {
+            setCurrentPlayer2Score(prev => prev + total);
+
+     
+    };
+}
+
+   
+       return (
+          <div style={{ textAlign: "center", marginTop: "40px" }}>
+            <h2> Target Score: {targetScore}</h2>
+            <h3>Turn: Player {turn}</h3>
+
+            <div style={{ marginTop: "20px" }}>
+            <p>Player 1: {player1Score}</p>
+            <p>Player 2: {player2Score}</p>
+            </div>
+
+            <div style={{ marginTop: "30px" }}>
+            <button
+                onClick={rollTurn}
+                disabled={turn !== 1}
+                style={{ marginRight: "10px", padding: "10px 20px" }}
+            >
+                Player 1 Roll
+            </button>
+            {turn === 1 && <p>Last roll: {currentPlayer1Score}</p>} 
+
+
+            <button
+                onClick={rollTurn}
+                disabled={turn !== 2}
+                style={{ padding: "10px 20px" }}
+            >
+                 Player 2 Roll
+            </button>
+            {turn === 2 && <p>Last roll: {currentPlayer2Score}</p>} 
+
+            <button 
+            onClick = {raplaceTurnAnd_add_currenr_score}
+            style={{ padding: "10px 20px" }}
+            >
+            raplace turn
+            </button>
+            
+            </div>
+            <div>
+              C:\Users\1\Desktop\1.png
+            // <img src={'C:\Users\1\Desktop\learn-js-rea\dice-${dice1}.png'} style={{ width: "50px", marginRight: "10px" }}/>
+            // <img src={'learn-js-rea/dice-${dice1}.png'}  style={{ width: "50px" }}/>
+        </div>
+
+        </div>
+        );
+    }
+    
+
+
+    
+
+      // הקומפוננטה הראשית שמנהלת איזה מסך להציג
+     function App() {
+        const [started, setStarted] = React.useState(false);
+        const [targetScore, setTargetScore] = React.useState(0);
+
+        const handleStart = (score) => {
+            setTargetScore(score);
+            setStarted(true);
+        };
+
+        if (started) {
+            // אם המשחק התחיל, מציגים את מסך המשחק
+            return <Game targetScore={targetScore} />;
+        } else {
+            // אם המשחק עדיין לא התחיל, מציגים את מסך ההתחלה
+            return <StartScreen onStart={handleStart} />;
+        }
+        }
+
+
+      // הרצת React בדף
+      const root = document.getElementById("root");
+      ReactDOM.createRoot(root).render(<App />);
+
+    </script>
+  </body>
+</html>
