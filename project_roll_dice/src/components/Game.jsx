@@ -185,9 +185,9 @@ useEffect(() => {
     if (currentPlayer.score === targetScore) {
       alert(`${currentPlayer.name} wins!`);
     setPlayers(prev => {
-      const newWins = prev[turn].wins + 1;  // ← כאן יוצרים משתנה חדש מתוך המידע הקיים
+      const newWins = prev[turn].wins + 1;  
 
-      // מעדכנים את localStorage לפני החזרה
+
       localStorage.setItem(`Number of wins player ${currentPlayer.id}`, newWins);
 
       return {
@@ -201,9 +201,7 @@ useEffect(() => {
     else if (currentPlayer.score > targetScore) {
       alert(`${otherPlayer.name} wins!`);
       setPlayers(prev => {
-      const newWins = prev[get_other_turn()].wins + 1;  // ← כאן יוצרים משתנה חדש מתוך המידע הקיים
-
-      // מעדכנים את localStorage לפני החזרה
+      const newWins = prev[get_other_turn()].wins + 1; 
       localStorage.setItem(`Number of wins player ${otherPlayer.id}`, newWins);
 
       return {
